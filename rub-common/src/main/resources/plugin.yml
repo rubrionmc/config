@@ -1,6 +1,6 @@
 #file: noinspection YAMLSchemaValidation
-name: ${project.name}
-main: ${project.group}.${project.type}.${project.name}Plugin
-version: ${project.version}
-authors: ${project.authors}
-api-version: ${paper-api.version}
+name: ${projectName}
+main: ${projectGroup}.${projectType}.${projectName}Plugin
+version: ${projectVersion}
+authors: ${projectAuthors}
+api-version: ${paperApiVersion}
