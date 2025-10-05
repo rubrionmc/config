@@ -5,7 +5,7 @@ import com.velocitypowered.api.plugin.Plugin;
 import net.rubrion.config.api.ConfigApiProvider;
 import net.rubrion.config.common.ConfigBootstrap;
 
-@Plugin(id = "config", name = "Config", version = "${project-version}", authors = "${project-authors}")
+@Plugin(id = "config", name = "Config", version = "${projectVersion}", authors = "${projectAuthors}")
 public class ConfigPlugin {
 
     @Inject
