@@ -10,31 +10,32 @@
  */
 package net.rubrion.config.api;
 
+import net.rubrion.common.api.api.ApiProvider;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * <p>
- * Provides static access to the {@link ConfigApi} instance.
+ * Provides static access to the {@link ConfigApiModule} instance.
  * This allows users to retrieve the API implementation
  * without directly depending on the core implementation.
  * </p>
  */
-public class ConfigApiProvider {
-    private static ConfigApi instance = null;
+public class ConfigApiProvider implements ApiProvider {
+    private static ConfigApiModule instance = null;
 
     private ConfigApiProvider() {
         throw new UnsupportedOperationException("This class cannot be instantiated.");
     }
 
     /**
-     * Returns the current {@link ConfigApi} API instance.
+     * Returns the current {@link ConfigApiModule} API instance.
      *
      * @return the registered API instance
      * @throws IllegalStateException if no API implementation is registered
      */
-    public static @NotNull ConfigApi get() {
-        ConfigApi inst = instance;
+    public static @NotNull ConfigApiModule get() {
+        ConfigApiModule inst = instance;
         if (inst == null) {
             throw new NotLoadedException();
         }
@@ -48,7 +49,7 @@ public class ConfigApiProvider {
      * @param api the API implementation
      */
     @ApiStatus.Internal
-    public static void register(ConfigApi api) {
+    public static void register(ConfigApiModule api) {
         if (instance != null) {
             throw new IllegalStateException("Template API already registered");
         }

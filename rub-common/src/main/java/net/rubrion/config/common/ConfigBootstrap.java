@@ -1,80 +1,83 @@
 package net.rubrion.config.common;
 
 import lombok.Getter;
-import net.rubrion.config.api.ConfigApi;
-import net.rubrion.config.api.ConfigFile;
-import net.rubrion.config.common.registry.ConfigRegistry;
-import org.jetbrains.annotations.NotNull;
+import net.rubrion.common.api.id.NamespacedId;
+import net.rubrion.config.api.ConfigApiModule;
+import net.rubrion.config.api.config.Config;
+import net.rubrion.config.api.config.ConfigFactory;
+import net.rubrion.config.common.adapter.type.TypeAdapterRegistryImpl;
+import net.rubrion.config.common.config.ConfigFactoryImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.Optional;
+import java.nio.file.Paths;
 
 @Getter
-public class ConfigBootstrap implements ConfigApi {
+public class ConfigBootstrap implements ConfigApiModule {
 
-    private final ConfigRegistry registry;
+    private static final Logger DEFAULT_LOGGER = LoggerFactory.getLogger(ConfigBootstrap.class);
+    private static final NamespacedId DEFAULT_ID = new NamespacedId("rubrion:config");
 
+    private final Logger logger;
+    private final NamespacedId id;
+    private final ConfigFactory configFactory;
+    private final TypeAdapterRegistryImpl typeAdapterRegistry;
+
+    /**
+     * Creates a new ConfigBootstrap using the default directory ("config/"),
+     * default NamespacedId ("rubrion:config"), and the default logger.
+     */
     public ConfigBootstrap() {
-        this.registry = new ConfigRegistry();
+        this(Paths.get("config"), DEFAULT_ID, DEFAULT_LOGGER);
     }
 
-    public ConfigBootstrap(Path baseDirectory) {
-        this.registry = new ConfigRegistry(baseDirectory);
+    /**
+     * Creates a new ConfigBootstrap using a custom config directory.
+     * Uses the default ID and logger.
+     *
+     * @param configDirectory The configuration directory.
+     */
+    public ConfigBootstrap(Path configDirectory) {
+        this(configDirectory, DEFAULT_ID, DEFAULT_LOGGER);
     }
 
-    @Override
-    public ConfigFile getFile(String path) {
-        return registry.get(path);
-    }
+    /**
+     * Creates a new ConfigBootstrap with all parameters provided.
+     *
+     * @param configDirectory The configuration directory
+     * @param id              The namespace id of the loader
+     * @param logger          The logger to use
+     */
+    public ConfigBootstrap(Path configDirectory, NamespacedId id, Logger logger) {
+        this.logger = logger != null ? logger : DEFAULT_LOGGER;
+        this.id = id != null ? id : DEFAULT_ID;
 
-    @Override
-    public ConfigFile getFile(@NotNull Path path) {
-        return registry.get(path.toString());
-    }
+        this.logger.info("Initializing Config System at: {}", configDirectory);
 
-    @Override
-    public void reload(String path) {
-        ConfigFile file = registry.get(path);
-        file.reload();
-    }
+        this.typeAdapterRegistry = new TypeAdapterRegistryImpl();
+        this.configFactory = new ConfigFactoryImpl(configDirectory, typeAdapterRegistry);
 
-    @Override
-    public void reloadAll() {
-        registry.reloadAll();
-    }
-
-    @Override
-    public void saveAll() {
-        registry.saveAll();
-    }
-
-    @Override
-    public void unload(String path) {
-        registry.unload(path);
+        this.logger.info("Config System initialized successfully");
     }
 
     @Override
-    public <T> Optional<T> get(String filePath, String key, Class<T> type) {
-        return getFile(filePath).get(key, type);
+    public NamespacedId loader() {
+        return id;
     }
 
     @Override
-    public <T> void set(String filePath, String key, T value) {
-        ConfigFile file = getFile(filePath);
-        file.set(key, value);
-        file.save();
+    public Logger logger() {
+        return logger;
     }
 
     @Override
-    public boolean exists(String filePath, String key) {
-        return getFile(filePath).exists(key);
+    public Config read(String filename) {
+        return configFactory.read(filename);
     }
 
     @Override
-    public void delete(String filePath, String key) {
-        ConfigFile file = getFile(filePath);
-        file.delete(key);
-        file.save();
+    public Config read(Path path) {
+        return configFactory.read(path);
     }
-
 }
