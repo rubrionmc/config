@@ -32,7 +32,7 @@ public class ConfigApiProvider implements ApiProvider {
      * Returns the current {@link ConfigApiModule} API instance.
      *
      * @return the registered API instance
-     * @throws IllegalStateException if no API implementation is registered
+     * @throws NotLoadedException if no API implementation is registered
      */
     public static @NotNull ConfigApiModule get() {
         ConfigApiModule inst = instance;
@@ -45,6 +45,7 @@ public class ConfigApiProvider implements ApiProvider {
     /**
      * Registers the API implementation.
      * This method should be called by the core module at startup.
+     * @throws IllegalStateException if an API implementation is registered
      *
      * @param api the API implementation
      */

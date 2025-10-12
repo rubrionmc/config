@@ -10,17 +10,18 @@
  */
 package net.rubrion.config.common.config;
 
+import net.rubrion.config.api.ConfigApiProvider;
 import net.rubrion.config.api.adapter.ConfigAdapter;
 import net.rubrion.config.api.adapter.TypeAdapterRegistry;
 import net.rubrion.config.api.config.Config;
 import net.rubrion.config.api.config.ConfigFactory;
+import net.rubrion.config.api.exception.ConfigSaveException;
 import net.rubrion.config.common.adapter.config.JsonConfigAdapter;
 import net.rubrion.config.common.adapter.config.TomlConfigAdapter;
 import net.rubrion.config.common.adapter.config.YamlConfigAdapter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ConfigFactoryImpl implements ConfigFactory {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFactoryImpl.class);
+    private static final Logger LOGGER = ConfigApiProvider.get().logger();
 
     private Path configDirectory;
     private final Map<String, ConfigAdapter> adapters;
@@ -81,12 +82,12 @@ public class ConfigFactoryImpl implements ConfigFactory {
             InputStream resourceStream = getClass().getClassLoader().getResourceAsStream(filename);
 
             if (resourceStream != null) {
-                LOGGER.info("Copying default config from resources: {}", filename);
+                LOGGER.trace("Copying default config from resources: {}", filename);
                 Files.createDirectories(path.getParent());
                 Files.copy(resourceStream, path, StandardCopyOption.REPLACE_EXISTING);
                 resourceStream.close();
             } else {
-                LOGGER.info("Creating empty config file: {}", path);
+                LOGGER.trace("Creating empty config file: {}", path);
                 Files.createDirectories(path.getParent());
 
                 String extension = getFileExtension(path);
@@ -94,8 +95,7 @@ public class ConfigFactoryImpl implements ConfigFactory {
                 Files.writeString(path, emptyContent);
             }
         } catch (IOException e) {
-            LOGGER.error("Failed to create config file: {}", path, e);
-            throw new RuntimeException("Failed to create config file", e);
+            throw new ConfigSaveException("Failed to create config file", e);
         }
     }
 
@@ -112,9 +112,9 @@ public class ConfigFactoryImpl implements ConfigFactory {
     private @NotNull String getFileExtension(@NotNull Path path) {
         String filename = path.getFileName().toString();
         int lastDot = filename.lastIndexOf('.');
-        if (lastDot > 0 && lastDot < filename.length() - 1) {
+        if (lastDot > 0 && lastDot < filename.length() - 1)
             return filename.substring(lastDot + 1);
-        }
+
         return "";
     }
 

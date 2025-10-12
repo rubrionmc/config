@@ -70,10 +70,7 @@ public class JsonConfigAdapter implements ConfigAdapter {
                 return primitive.getAsBoolean();
             } else if (primitive.isNumber()) {
                 Number number = primitive.getAsNumber();
-                // Try to preserve integer types
-                if (number.doubleValue() == number.longValue()) {
-                    return number.longValue();
-                }
+                if (number.doubleValue() == number.longValue()) return number.longValue();
                 return number.doubleValue();
             } else {
                 return primitive.getAsString();

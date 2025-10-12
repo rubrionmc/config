@@ -148,13 +148,18 @@ tasks.register("generateAiDocs") {
 
                     val response = conn.inputStream.bufferedReader().readText()
                     val content = "\"content\":\"".toRegex().find(response)?.let { m -> response.substring(m.range.last + 1, response.lastIndexOf("\"")) }
-                    if (!content.isNullOrBlank()) javaFile.writeText(content.trim())
+                    if (content.isNullOrBlank()) return@forEach
+                    val cleanedContent = content.replace("\\n", "\n")
+                        .replace("\\t", "\t")
+                        .replace("\\\"", "\"")
+                        .replace("\\'", "'")
+                    javaFile.writeText(cleanedContent.trim())
                     println("Updated ${javaFile.name}")
                 } catch (e: Exception) {
                     println("Failed ${javaFile.name}: ${e.message}")
                 }
 
-                Thread.sleep(90000)
+                Thread.sleep(50000)
             }
         }
 

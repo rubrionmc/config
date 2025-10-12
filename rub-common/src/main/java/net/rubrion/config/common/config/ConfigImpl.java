@@ -13,14 +13,12 @@ package net.rubrion.config.common.config;
 import net.rubrion.config.api.adapter.ConfigAdapter;
 import net.rubrion.config.api.adapter.TypeAdapterRegistry;
 import net.rubrion.config.api.config.Config;
-import net.rubrion.config.api.field.Field;
-import net.rubrion.config.api.field.FieldList;
-import net.rubrion.config.api.field.FieldSection;
-import net.rubrion.config.common.field.FieldImpl;
-import net.rubrion.config.common.field.FieldListImpl;
-import net.rubrion.config.common.field.FieldSectionImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.rubrion.config.api.exception.ConfigReadException;
+import net.rubrion.config.api.exception.ConfigSaveException;
+import net.rubrion.config.api.field.*;
+import net.rubrion.config.common.field.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,7 +26,6 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class ConfigImpl implements Config {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigImpl.class);
 
     private final Path path;
     private final ConfigAdapter adapter;
@@ -55,9 +52,9 @@ public class ConfigImpl implements Config {
             this.rawContent = Files.readString(path);
             this.data = adapter.read(rawContent);
         } catch (IOException e) {
-            LOGGER.error("Failed to load config from {}", path, e);
             this.data = new HashMap<>();
             this.rawContent = "";
+            throw new ConfigReadException("Failed to load config from " + path, e);
         }
     }
 
@@ -72,7 +69,6 @@ public class ConfigImpl implements Config {
             T converted = typeRegistry.convert(value, type);
             return Optional.ofNullable(converted);
         } catch (Exception e) {
-            LOGGER.warn("Failed to convert {} to {}", key, type.getSimpleName(), e);
             return Optional.empty();
         }
     }
@@ -116,7 +112,7 @@ public class ConfigImpl implements Config {
             Files.writeString(path, updated);
             this.rawContent = updated;
         } catch (IOException e) {
-            LOGGER.error("Failed to save config to {}", path, e);
+            throw new ConfigSaveException("Failed to save config to " + path, e);
         }
     }
 
@@ -125,7 +121,7 @@ public class ConfigImpl implements Config {
         return path;
     }
 
-    private Object getValueByKey(String key) {
+    private @Nullable Object getValueByKey(@NotNull String key) {
         String[] parts = key.split("\\.");
         Map<String, Object> current = data;
 
@@ -134,13 +130,14 @@ public class ConfigImpl implements Config {
             if (!(next instanceof Map)) {
                 return null;
             }
+            //noinspection unchecked
             current = (Map<String, Object>) next;
         }
 
         return current.get(parts[parts.length - 1]);
     }
 
-    private void setValueByKey(String key, Object value) {
+    private void setValueByKey(@NotNull String key, Object value) {
         String[] parts = key.split("\\.");
         Map<String, Object> current = data;
 
@@ -151,6 +148,7 @@ public class ConfigImpl implements Config {
                 current.put(parts[i], newMap);
                 current = newMap;
             } else {
+                //noinspection unchecked
                 current = (Map<String, Object>) next;
             }
         }
