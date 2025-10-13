@@ -1,7 +1,3 @@
-import java.net.HttpURLConnection
-import java.net.URL
-import java.io.File
-
 plugins {
     java
     `maven-publish`
@@ -67,7 +63,6 @@ subprojects {
     }
 }
 
-// -------------------- PACKET BUILD TASK --------------------
 tasks.register("packets") {
     group = "build"
     description = "Builds all platform variants and copies them to /out"
@@ -83,86 +78,5 @@ tasks.register("packets") {
             }
         }
         println("[X] All builds finished.")
-    }
-}
-
-// -------------------- AI JAVADOC TASK --------------------
-val openRouterApiKey = System.getenv("DEEPSEEK_API_KEY")
-val openRouterModel = "deepseek/deepseek-r1:free"
-val backupFolder = "build/backup"
-
-tasks.register("generateAiDocs") {
-    group = "documentation"
-    description = "Generates AI-enhanced JavaDocs for all Java files."
-
-    doLast {
-        if (openRouterApiKey.isNullOrBlank())
-            throw GradleException("DEEPSEEK_API_KEY environment variable not set!")
-
-        val backupRoot = File(backupFolder).apply { mkdirs() }
-
-        subprojects.forEach { proj ->
-            val srcFolder = proj.file("src/main/java")
-            if (!srcFolder.exists()) return@forEach
-
-            srcFolder.walkTopDown().filter { it.isFile && it.extension == "java" }.forEach { javaFile ->
-                println("Processing: ${javaFile.relativeTo(proj.projectDir)}")
-
-                val backupFile = File(backupRoot, javaFile.relativeTo(proj.projectDir).invariantSeparatorsPath)
-                backupFile.parentFile.mkdirs()
-                javaFile.copyTo(backupFile, overwrite = true)
-
-                val code = javaFile.readText()
-                val prompt = """
-                    Return the code as plain text, without any Markdown formatting or escaped characters.
-                    You are a Java expert. Enhance existing JavaDoc or add comprehensive documentation.
-                    Include @author, @since, @param, @return, and @throws where applicable.
-                    Keep code structure intact.
-                    Java Code:
-                    $code
-                """.trimIndent()
-
-                val jsonBody = """
-                    {
-                        "model": "$openRouterModel",
-                        "messages": [{"role":"user","content":"$prompt"}],
-                        "temperature": 0.2,
-                        "max_tokens": 4096
-                    }
-                """.trimIndent()
-
-                try {
-                    val url = URL("https://openrouter.ai/api/v1/chat/completions")
-                    val conn = url.openConnection() as HttpURLConnection
-                    conn.requestMethod = "POST"
-                    conn.setRequestProperty("Authorization", "Bearer $openRouterApiKey")
-                    conn.setRequestProperty("Content-Type", "application/json")
-                    conn.doOutput = true
-
-                    conn.outputStream.use { it.write(jsonBody.toByteArray()) }
-
-                    if (conn.responseCode != 200) {
-                        println("HTTP ${conn.responseCode} for ${javaFile.name}")
-                        return@forEach
-                    }
-
-                    val response = conn.inputStream.bufferedReader().readText()
-                    val content = "\"content\":\"".toRegex().find(response)?.let { m -> response.substring(m.range.last + 1, response.lastIndexOf("\"")) }
-                    if (content.isNullOrBlank()) return@forEach
-                    val cleanedContent = content.replace("\\n", "\n")
-                        .replace("\\t", "\t")
-                        .replace("\\\"", "\"")
-                        .replace("\\'", "'")
-                    javaFile.writeText(cleanedContent.trim())
-                    println("Updated ${javaFile.name}")
-                } catch (e: Exception) {
-                    println("Failed ${javaFile.name}: ${e.message}")
-                }
-
-                Thread.sleep(50000)
-            }
-        }
-
-        println("[X] AI JavaDoc generation done. Backups in $backupFolder.")
     }
 }
