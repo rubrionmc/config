@@ -33,7 +33,7 @@ pluginManagement {
     plugins { kotlin("jvm") version "2.2.10" }
 }
 
-rootProject.name = "rub-text"
+rootProject.name = "rub-config"
 
 include("api", "common")
 
