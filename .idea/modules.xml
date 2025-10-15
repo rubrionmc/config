@@ -2,13 +2,13 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/rub-api/rub-config.api.main.iml" filepath="$PROJECT_DIR$/.idea/modules/rub-api/rub-config.api.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/rup-bungee/rub-config.bungee.iml" filepath="$PROJECT_DIR$/.idea/modules/rup-bungee/rub-config.bungee.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/rub-common/rub-config.common.main.iml" filepath="$PROJECT_DIR$/.idea/modules/rub-common/rub-config.common.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/rub-common/rub-config.common.test.iml" filepath="$PROJECT_DIR$/.idea/modules/rub-common/rub-config.common.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/rum-paper/rub-config.paper.iml" filepath="$PROJECT_DIR$/.idea/modules/rum-paper/rub-config.paper.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/rum-spigot/rub-config.spigot.iml" filepath="$PROJECT_DIR$/.idea/modules/rum-spigot/rub-config.spigot.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/rup-velocity/rub-config.velocity.iml" filepath="$PROJECT_DIR$/.idea/modules/rup-velocity/rub-config.velocity.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/rub-api/rub-text.api.main.iml" filepath="$PROJECT_DIR$/.idea/modules/rub-api/rub-text.api.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/rub-common/rub-text.common.main.iml" filepath="$PROJECT_DIR$/.idea/modules/rub-common/rub-text.common.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/rub-common/rub-text.common.test.iml" filepath="$PROJECT_DIR$/.idea/modules/rub-common/rub-text.common.test.iml" />
     </modules>
   </component>
 </project>

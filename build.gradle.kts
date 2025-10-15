@@ -43,6 +43,15 @@ subprojects {
 
     tasks.withType<Jar> {
         archiveBaseName.set("${rootProject.name}-${project.name}")
+
+        val dependencies = configurations.runtimeClasspath.get()
+        from({
+            dependencies.map { if (it.isDirectory) it else zipTree(it) }
+        })
+
+        exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
+
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 
     publishing {
