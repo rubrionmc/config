@@ -10,6 +10,7 @@
  */
 package net.rubrion.config.api.config;
 
+import net.rubrion.config.api.ConfigApiModule;
 import net.rubrion.config.api.ConfigApiProvider;
 import net.rubrion.config.api.exception.ConfigReadException;
 import net.rubrion.config.api.field.Field;
@@ -38,6 +39,7 @@ public interface Config {
      *
      * @author LeyCM
      * @since 2.0.2
+     * @see ConfigApiModule#read(String)
      */
     static Config read(String filename) {
         return ConfigApiProvider.get().read(filename);
@@ -53,6 +55,7 @@ public interface Config {
      *
      * @author LeyCM
      * @since 2.0.2
+     * @see ConfigApiModule#read(Path)
      */
     static Config read(Path path) {
         return ConfigApiProvider.get().read(path);
