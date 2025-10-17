@@ -19,8 +19,10 @@ allprojects {
     repositories {
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://oss.sonatype.org/content/groups/public/")
         maven("https://libraries.minecraft.net")
         maven("https://repo.codemc.io/repository/maven-releases/")
+        maven("https://repo.codemc.io/repository/maven-snapshots/")
         maven("https://repo.codemc.io/repository/maven-snapshots/")
         maven("https://rubrionmc.github.io/repository/")
     }
@@ -31,15 +33,13 @@ subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "io.freefair.lombok")
 
-    dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    }
-
     java {
         toolchain.languageVersion.set(JavaLanguageVersion.of(property("javaVersion").toString().toInt()))
     }
 
-    tasks.withType<JavaCompile> { options.encoding = "UTF-8" }
+    tasks.withType<JavaCompile> {
+        options.encoding = "UTF-8"
+    }
 
     tasks.withType<Jar> {
         archiveBaseName.set("${rootProject.name}-${project.name}")
@@ -63,29 +63,38 @@ subprojects {
                 version = project.version.toString()
             }
         }
+
         repositories {
             maven {
-                name = "local-repo"
-                url = uri(rootProject.projectDir.resolve("../repository"))
+                name = "rub-repo"
+                val repoDir = rootProject.projectDir.parentFile.resolve("repository")
+                url = uri(repoDir)
             }
         }
     }
+
 }
 
 tasks.register("packets") {
     group = "build"
     description = "Builds all platform variants and copies them to /out"
+
     dependsOn(subprojects.mapNotNull { it.tasks.findByName("build") })
 
     doLast {
-        val outDir = rootProject.file("out").apply { mkdirs() }
-        subprojects.filter { it.name != "api" }.forEach { proj ->
-            val jar = proj.buildDir.resolve("libs/${rootProject.name}-${proj.name}-${proj.version}.jar")
-            if (jar.exists()) {
-                jar.copyTo(outDir.resolve(jar.name), overwrite = true)
-                println("[C] Copied ${jar.name} to out/")
+        val outDir = rootProject.file("out")
+        outDir.mkdirs()
+
+        subprojects
+            .filter { it.name != "api" }
+            .forEach { project ->
+                val jar = project.buildDir.resolve("libs/${rootProject.name}-${project.name}-${project.version}.jar")
+                if (jar.exists()) {
+                    jar.copyTo(outDir.resolve(jar.name), overwrite = true)
+                    println("[C] Copied ${jar.name} to out/")
+                }
             }
-        }
-        println("[X] All builds finished.")
+
+        println("[ ] All plugin builds finished and moved to /out/")
     }
 }
